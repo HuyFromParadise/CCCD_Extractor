@@ -1,0 +1,19 @@
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+
+# PyTorch & YOLO Runs
+runs/
+*.pt
+dataset
+
+# Temporary & Data files
+data/temp/*
+data/output/*
+!.gitkeep
+
+weights
+yolov8n
+
+data
