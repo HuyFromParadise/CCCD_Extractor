@@ -12,7 +12,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Cấu hình CORS để cho phép Frontend (React, Vue, Web UI...) gọi API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,14 +20,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Khởi tạo Pipeline OCR (Load model 1 lần duy nhất khi khởi chạy server)
 MODEL_WEIGHTS = "weights/cccd_yolo_best.pt"
 TEMP_DIR = "data/temp"
 
 os.makedirs(TEMP_DIR, exist_ok=True)
 ocr_pipeline = CCCDPipeline(yolo_path=MODEL_WEIGHTS)
 
-# Map tên class sang tên hiển thị chuẩn
 FIELD_NAMES = {
     'id': 'Số CCCD',
     'name': 'Họ và tên',
@@ -46,11 +43,9 @@ def root():
 
 @app.post("/api/v1/extract-cccd")
 async def extract_cccd(file: UploadFile = File(...)):
-    # 1. Kiểm tra định dạng file gửi lên
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File tải lên phải là định dạng hình ảnh (jpg, png, jpeg)")
 
-    # 2. Lưu tạm file ảnh vào ổ đĩa với tên ngẫu nhiên (tránh trùng lặp)
     file_extension = file.filename.split(".")[-1]
     temp_filename = f"{uuid.uuid4()}.{file_extension}"
     temp_file_path = os.path.join(TEMP_DIR, temp_filename)
@@ -59,10 +54,8 @@ async def extract_cccd(file: UploadFile = File(...)):
         with open(temp_file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        # 3. Trích xuất thông tin bằng Pipeline
         raw_results = ocr_pipeline.process_image(temp_file_path)
 
-        # 4. Định dạng lại JSON đầu ra
         formatted_data = {}
         for key, value in raw_results.items():
             field_name = FIELD_NAMES.get(key, key)
@@ -82,7 +75,6 @@ async def extract_cccd(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Lỗi hệ thống trong quá trình OCR: {str(e)}")
 
     finally:
-        # 5. Dọn dẹp file tạm sau khi xử lý xong
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
             

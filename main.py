@@ -7,7 +7,6 @@ if __name__ == "__main__":
 
     ocr_pipeline = CCCDPipeline(yolo_path=MODEL_WEIGHTS)
 
-    # Khai báo tên hiển thị tương ứng với 8 nhãn dữ liệu thực tế
     FIELD_NAMES = {
         'id': 'Số CCCD',
         'name': 'Họ và tên',
@@ -22,11 +21,11 @@ if __name__ == "__main__":
     try:
         results = ocr_pipeline.process_image(TEST_IMAGE)
         
-        print("\n================ KẾT QUẢ TRÍCH XUẤT CCCD ================")
+        print("\n================ Extractor Result CCCD ================")
         for field, value in results.items():
             display_name = FIELD_NAMES.get(field, field.upper())
             print(f"📌 {display_name}: {value}")
         print("=========================================================\n")
         
     except Exception as e:
-        print(f"Lỗi trong quá trình xử lý: {e}")
+        print(f"Failed in processing: {e}")
